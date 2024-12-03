@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Python IDE</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        textarea {
+            width: 100%;
+            height: 300px;
+        }
+        button {
+            margin-top: 10px;
+            padding: 10px;
+            font-size: 16px;
+        }
+        pre {
+            background-color: #f4f4f4;
+            padding: 10px;
+            border: 1px solid #ddd;
+            overflow-x: auto;
+        }
+        .file-tabs {
+            margin-bottom: 10px;
+        }
+        .file-tabs button {
+            margin-right: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Python IDE</h1>
+
+    <!-- File Management -->
+    <div class="file-tabs" id="file-tabs">
+        <button onclick="createNewFile()">New File</button>
+    </div>
+
+    <!-- Code Editor -->
+    <textarea id="code-editor" placeholder="Write your Python code here..."></textarea>
+    <button onclick="runCode()">Run Code</button>
+    <pre id="output"></pre>
+
+    <!-- Module Installer -->
+    <h3>Install a Python Module</h3>
+    <input id="module-name" type="text" placeholder="Enter module name">
+    <button onclick="installModule()">Install Module</button>
+    <pre id="install-output"></pre>
+
+    <script>
+        let currentFileName = 'main.py';  // Default file
+        let files = { 'main.py': '' };  // Store file contents
+
+        // Switch to a different file
+        function switchFile(fileName) {
+            currentFileName = fileName;
+            document.getElementById('code-editor').value = files[fileName];
+        }
+
+        // Create a new file
+        function createNewFile() {
+            const fileName = prompt("Enter file name (e.g., 'script.py')");
+            if (fileName && !files[fileName]) {
+                files[fileName] = ''; // Create an empty file
+                updateFileTabs();
+                switchFile(fileName);
+            } else {
+                alert('File already exists or invalid name');
+            }
+        }
+
+        // Update the file tabs
+        function updateFileTabs() {
+            const fileTabs = document.getElementById('file-tabs');
+            fileTabs.innerHTML = '<button onclick="createNewFile()">New File</button>';  // Reset file tab list
+            Object.keys(files).forEach(fileName => {
+                const tabButton = document.createElement('button');
+                tabButton.textContent = fileName;
+                tabButton.onclick = () => switchFile(fileName);
+                fileTabs.appendChild(tabButton);
+            });
+        }
+
+        // Run the code
+        async function runCode() {
+            const code = files[currentFileName];
+            const outputElement = document.getElementById('output');
+
+            if (!code) {
+                outputElement.textContent = "Please enter some code to run.";
+                return;
+            }
+
+            try {
+                const response = await fetch('/run', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ code, fileName: currentFileName })
+                });
+
+                const result = await response.json();
+                if (response.ok) {
+                    outputElement.textContent = result.output;
+                } else {
+                    outputElement.textContent = `Error: ${result.error}`;
+                }
+            } catch (error) {
+                outputElement.textContent = `Error: ${error.message}`;
+            }
+        }
+
+        // Install Python Module
+        async function installModule() {
+            const moduleName = document.getElementById('module-name').value;
+            const outputElement = document.getElementById('install-output');
+
+            if (!moduleName) {
+                outputElement.textContent = "Please enter a module name.";
+                return;
+            }
+
+            try {
+                const response = await fetch('/install', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ module: moduleName })
+                });
+
+                const result = await response.json();
+                if (response.ok) {
+                    outputElement.textContent = result.output;
+                } else {
+                    outputElement.textContent = `Error: ${result.error}`;
+                }
+            } catch (error) {
+                outputElement.textContent = `Error: ${error.message}`;
+            }
+        }
+
+        // Save file contents to memory
+        window.addEventListener('beforeunload', () => {
+            files[currentFileName] = document.getElementById('code-editor').value;
+        });
+    </script>
+</body>
+</html>
