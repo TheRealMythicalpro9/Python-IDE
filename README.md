@@ -2,6 +2,10 @@
 Python IDE with graphics although it is not fully tested
 
 # How to run?
+
+```
+git clone https://github.com/TheRealMythicalpro9/Python-IDE
+```
 ```
 python --version  # or python3 --version
 pip --version  # or pip3 --version
