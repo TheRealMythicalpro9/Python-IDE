@@ -21,6 +21,10 @@ python -m venv venv
 cd venv
 . bin/activate
 ```
+```
+cd
+cd /workspace/Python-IDE #or path to file
+```
 
 ```
 pip install flask
