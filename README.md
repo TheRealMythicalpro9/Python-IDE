@@ -18,7 +18,8 @@ source venv/bin/activate
 windows:
 ```
 python -m venv venv
-venv\Scripts\activate
+cd venv
+. bin/activate
 ```
 
 ```
